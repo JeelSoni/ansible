@@ -1,0 +1,66 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  become_user: root
+  become_method: sudo
+
+  vars:
+      region: 
+      instance_type: t2.micro
+      ami: ami-062f7200baf2fa504
+      keypair: android 
+      access_key_ID: AKIAZGVF254A55TPYWKO
+      secret_key_ID: dgydRth8YLS7A5qCQi47F0CwK2SdPADY9c19bHDE
+      security_group: sg-0f4e3018d880fff47
+      vpc_subnet_id: subnet-da685af5
+
+  tasks:
+#    - shell: sh /etc/ansible/dynamic.sh
+#    tag: p1
+#    - pip:
+#        name: boto
+
+#    - name: Install Python
+#      command: sudo apt-get install python
+
+    - name: Create an ec2 instance
+      ec2:
+         aws_access_key: "{{access_key_ID}}"
+         aws_secret_key: "{{secret_key_ID}}"
+         key_name: "{{ keypair }}"
+         group: "{{security_group}}"
+         instance_type: "{{ instance_type}}"
+         user_data: |
+                    #!/bin/bash
+                    sudo yum update -y
+                    sudo yum install httpd -y
+                    service httpd start 
+                    chkconfig httpd on 
+                    echo "First EC2 Instance" >/var/www/html/index.html
+         image: "{{ ami }}"
+         wait: true 
+         region: "{{ region }}"
+         count: 1  # default
+         count_tag: 
+            Name: Demo
+         instance_tags:
+            Name: "{{ item }}"
+         vpc_subnet_id: "{{ vpc_subnet_id }}"
+         assign_public_ip: yes
+         wait: True
+         wait_timeout: 600
+
+      register: ec2
+
+      with_items:
+        - Indexer
+
+    - pause:
+        minutes: 1
+
+    - name: Refresh EC2 cache
+      command: /etc/ansible/ec2.py --refresh-cache
+
+    - name: Refresh in-memory EC2 cache
+      meta: refresh_inventory
