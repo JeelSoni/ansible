@@ -10,8 +10,7 @@
       instance_type: t2.micro
       ami: ami-062f7200baf2fa504
       keypair: android 
-      access_key_ID: AKIAZGVF254A55TPYWKO
-      secret_key_ID: dgydRth8YLS7A5qCQi47F0CwK2SdPADY9c19bHDE
+      access_key_ID: 
       security_group: sg-0f4e3018d880fff47
       vpc_subnet_id: subnet-da685af5
 
